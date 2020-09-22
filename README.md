@@ -2,6 +2,7 @@
 # Hazelcast Cloud SDK - Go
 
 [![GoDoc](https://godoc.org/github.com/hazelcast/hazelcast-cloud-go-sdk?status.svg)](https://pkg.go.dev/github.com/hazelcast/hazelcast-cloud-sdk-go)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/485b571f54dd3b32b02f/test_coverage)](https://codeclimate.com/github/hazelcast/hazelcast-cloud-sdk-go/test_coverage)
 
 Hazelcast Cloud is a client library to consume Public API easily.
 
