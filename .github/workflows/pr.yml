@@ -31,7 +31,7 @@ jobs:
       - name: Test Coverage
         uses: paambaati/codeclimate-action@v2.6.0
         env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+          CC_TEST_REPORTER_ID: 1328df9689ccaa7198047a8aacce50e20ebd1a9c2ca5d238d56f0fefb129346e
         with:
           coverageCommand: go test -coverprofile c.out -v ./... -run="^Test"
           coverageLocations: ${{github.workspace}}/c.out:gocov
