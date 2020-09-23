@@ -17,7 +17,7 @@ where X.Y.Z is the [version](https://github.com/hazelcast/hazelcast-cloud-sdk-go
 
 or
 ```sh
-go get github.com/hazelcast/hazelcast-cloud-go
+go get github.com/hazelcast/hazelcast-cloud-sdk-go
 ```
 for non Go modules usage or latest version.
 
@@ -42,7 +42,7 @@ Then, you can use your API Key and API Secret to create a new client as shown be
 package main
 
 import (
-    "github.com/hazelcast/hazelcast-cloud-go-sdk"
+    "github.com/hazelcast/hazelcast-cloud-sdk-go"
 )
 
 func main() {
