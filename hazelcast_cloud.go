@@ -48,7 +48,7 @@ type Client struct {
 	UserAgent string
 	Rate      Rate
 	rateMutex sync.Mutex
-	token     string
+	Token     string
 
 	StarterCluster    StarterClusterService
 	EnterpriseCluster EnterpriseClusterService
@@ -58,6 +58,9 @@ type Client struct {
 	InstanceType      InstanceTypeService
 	HazelcastVersion  HazelcastVersionService
 	Auth              AuthService
+	GcpPeering        GcpPeeringService
+	AzurePeering      AzurePeeringService
+	AwsPeering        AwsPeeringService
 
 	onRequestCompleted RequestCompletionCallback
 }
@@ -97,6 +100,9 @@ func NewClient(httpClient *http.Client, options ...Option) *Client {
 	c.AvailabilityZone = NewAvailabilityZoneService(c)
 	c.InstanceType = NewInstanceTypeService(c)
 	c.HazelcastVersion = NewHazelcastVersionService(c)
+	c.GcpPeering = NewGcpPeeringService(c)
+	c.AzurePeering = NewAzurePeeringService(c)
+	c.AwsPeering = NewAwsPeeringService(c)
 
 	for _, option := range options {
 		option(c)
@@ -130,7 +136,7 @@ func NewFromCredentials(apiKey string, apiSecret string, options ...Option) (*Cl
 	if loginErr != nil {
 		return nil, loginResp, loginErr
 	}
-	client.token = login.Token
+	client.Token = login.Token
 	return client, loginResp, nil
 }
 
@@ -156,8 +162,8 @@ func (c *Client) NewRequest(body *models.GraphqlRequest) (*http.Request, error) 
 	req.Header.Add("Content-Type", mediaType)
 	req.Header.Add("Accept", mediaType)
 	req.Header.Add("User-Agent", c.UserAgent)
-	if c.token != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	if c.Token != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
 	return req, nil
 }

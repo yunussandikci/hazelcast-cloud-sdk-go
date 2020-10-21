@@ -28,7 +28,7 @@ func TestStarterClusterServiceOp_Create(t *testing.T) {
 		if strings.Contains(request.Query, "createStarterCluster") {
 			fmt.Fprint(w, `{"data":{"response":{"id":"123456","customerId":17000,"teamId":null,"name":"test-cluster","password":"e6838c596a0342d4918cf89a8d071023","port":34005,"hazelcastVersion":"3.12.2-4","isAutoScalingEnabled":false,"isHotBackupEnabled":false}}}`)
 		} else {
-			fmt.Fprint(w, `{"data":{"response":{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5dW51c0BoYXplbGNhc3QuY29tIiwicm9sZXMiOlt7InRlYW1JZCI6IjMiLCJhdXRob3JpdHkiOiJURUFNX0FETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9GSU5BTkNFIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkFETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJVU0VSIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkRFRElDQVRFRF9VU0VSIn0seyJ0ZWFtSWQiOiIyIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjoiMiIsImF1dGhvcml0eSI6IlRFQU1fRklOQU5DRSJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJBQ0NPVU5USU5HIn1dLCJ0b2tlbiI6IjE1YjY5MWQxLThmOWUtNGQ4Zi04NzNkLTk4ZWI0NGU0ODk5NSIsImV4cCI6MTc1NzQyODg3MH0.HM3vLZbR4H8LIu0Quqm3dqwCj6V_XAYtaUGg5ZQkeefgvMA1LIoxJRyPgZYhJgJJ_aHPnBZ08wJwCrFADGHitA"}}}`)
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
 		}
 
 	})
@@ -49,6 +49,37 @@ func TestStarterClusterServiceOp_Create(t *testing.T) {
 	assert.False(t, (*clusterResponse).IsHotBackupEnabled)
 }
 
+func TestStarterClusterServiceOp_Fail_On_Create(t *testing.T) {
+	//given
+	serveMux := http.NewServeMux()
+	server := httptest.NewServer(serveMux)
+	defer server.Close()
+
+	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodPost; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		var request GraphQLQuery
+		json.NewDecoder(r.Body).Decode(&request)
+
+		if strings.Contains(request.Query, "createStarterCluster") {
+			fmt.Fprint(w, `{"errors":[{"message":"500: Internal server error"}],"data":{"response":null}}`)
+		} else {
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
+		}
+
+	})
+	client, _, _ := NewFromCredentials("apiKey", "apiSecret", OptionEndpoint(server.URL))
+	request := &models.CreateStarterClusterInput{}
+
+	//when
+	_, _, createErr := NewStarterClusterService(client).Create(context.TODO(), request)
+
+	//then
+	assert.NotNil(t, createErr)
+	assert.Contains(t, createErr.Error(), "500: Internal server error")
+}
+
 func TestStarterClusterServiceOp_Get(t *testing.T) {
 	//given
 	serveMux := http.NewServeMux()
@@ -65,7 +96,7 @@ func TestStarterClusterServiceOp_Get(t *testing.T) {
 		if strings.Contains(request.Query, "cluster") {
 			fmt.Fprint(w, `{"data":{"response":{"id":"123456","customerId":17000,"teamId":null,"name":"test-cluster","password":"e6838c596a0342d4918cf89a8d071023","port":34005,"hazelcastVersion":"3.12.2-4","isAutoScalingEnabled":false,"isHotBackupEnabled":false}}}`)
 		} else {
-			fmt.Fprint(w, `{"data":{"response":{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5dW51c0BoYXplbGNhc3QuY29tIiwicm9sZXMiOlt7InRlYW1JZCI6IjMiLCJhdXRob3JpdHkiOiJURUFNX0FETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9GSU5BTkNFIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkFETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJVU0VSIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkRFRElDQVRFRF9VU0VSIn0seyJ0ZWFtSWQiOiIyIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjoiMiIsImF1dGhvcml0eSI6IlRFQU1fRklOQU5DRSJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJBQ0NPVU5USU5HIn1dLCJ0b2tlbiI6IjE1YjY5MWQxLThmOWUtNGQ4Zi04NzNkLTk4ZWI0NGU0ODk5NSIsImV4cCI6MTc1NzQyODg3MH0.HM3vLZbR4H8LIu0Quqm3dqwCj6V_XAYtaUGg5ZQkeefgvMA1LIoxJRyPgZYhJgJJ_aHPnBZ08wJwCrFADGHitA"}}}`)
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
 		}
 
 	})
@@ -86,6 +117,37 @@ func TestStarterClusterServiceOp_Get(t *testing.T) {
 	assert.False(t, (*clusterResponse).IsHotBackupEnabled)
 }
 
+func TestStarterClusterServiceOp_Fail_On_Get(t *testing.T) {
+	//given
+	serveMux := http.NewServeMux()
+	server := httptest.NewServer(serveMux)
+	defer server.Close()
+
+	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodPost; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		var request GraphQLQuery
+		json.NewDecoder(r.Body).Decode(&request)
+
+		if strings.Contains(request.Query, "cluster") {
+			fmt.Fprint(w, `{"errors":[{"message":"500: Internal server error"}],"data":{"response":null}}`)
+		} else {
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
+		}
+
+	})
+	client, _, _ := NewFromCredentials("apiKey", "apiSecret", OptionEndpoint(server.URL))
+	request := &models.GetStarterClusterInput{}
+
+	//when
+	_, _, getErr := NewStarterClusterService(client).Get(context.TODO(), request)
+
+	//then
+	assert.NotNil(t, getErr)
+	assert.Contains(t, getErr.Error(), "500: Internal server error")
+}
+
 func TestStarterClusterServiceOp_List(t *testing.T) {
 	//given
 	serveMux := http.NewServeMux()
@@ -102,7 +164,7 @@ func TestStarterClusterServiceOp_List(t *testing.T) {
 		if strings.Contains(request.Query, "cluster") {
 			fmt.Fprint(w, `{"data":{"response":[{"id":"427","name":"demo"},{"id":"429","name":"demo-play2"},{"id":"437","name":"demo-play3"},{"id":"438","name":"demo-sdk"},{"id":"439","name":"mycluster"},{"id":"445","name":"test-cluster"}]}}`)
 		} else {
-			fmt.Fprint(w, `{"data":{"response":{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5dW51c0BoYXplbGNhc3QuY29tIiwicm9sZXMiOlt7InRlYW1JZCI6IjMiLCJhdXRob3JpdHkiOiJURUFNX0FETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9GSU5BTkNFIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkFETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJVU0VSIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkRFRElDQVRFRF9VU0VSIn0seyJ0ZWFtSWQiOiIyIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjoiMiIsImF1dGhvcml0eSI6IlRFQU1fRklOQU5DRSJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJBQ0NPVU5USU5HIn1dLCJ0b2tlbiI6IjE1YjY5MWQxLThmOWUtNGQ4Zi04NzNkLTk4ZWI0NGU0ODk5NSIsImV4cCI6MTc1NzQyODg3MH0.HM3vLZbR4H8LIu0Quqm3dqwCj6V_XAYtaUGg5ZQkeefgvMA1LIoxJRyPgZYhJgJJ_aHPnBZ08wJwCrFADGHitA"}}}`)
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
 		}
 
 	})
@@ -113,6 +175,36 @@ func TestStarterClusterServiceOp_List(t *testing.T) {
 
 	//then
 	assert.Len(t, *(clusterResponses), 6)
+}
+
+func TestStarterClusterServiceOp_Fail_On_List(t *testing.T) {
+	//given
+	serveMux := http.NewServeMux()
+	server := httptest.NewServer(serveMux)
+	defer server.Close()
+
+	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodPost; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		var request GraphQLQuery
+		json.NewDecoder(r.Body).Decode(&request)
+
+		if strings.Contains(request.Query, "cluster") {
+			fmt.Fprint(w, `{"errors":[{"message":"500: Internal server error"}],"data":{"response":null}}`)
+		} else {
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
+		}
+
+	})
+	client, _, _ := NewFromCredentials("apiKey", "apiSecret", OptionEndpoint(server.URL))
+
+	//when
+	_, _, listErr := NewStarterClusterService(client).List(context.TODO())
+
+	//then
+	assert.NotNil(t, listErr)
+	assert.Contains(t, listErr.Error(), "500: Internal server error")
 }
 
 func TestStarterClusterServiceOp_Resume(t *testing.T) {
@@ -131,7 +223,7 @@ func TestStarterClusterServiceOp_Resume(t *testing.T) {
 		if strings.Contains(request.Query, "resumeCluster") {
 			fmt.Fprint(w, `{"data":{"response":{"clusterId":427}}}`)
 		} else {
-			fmt.Fprint(w, `{"data":{"response":{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5dW51c0BoYXplbGNhc3QuY29tIiwicm9sZXMiOlt7InRlYW1JZCI6IjMiLCJhdXRob3JpdHkiOiJURUFNX0FETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9GSU5BTkNFIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkFETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJVU0VSIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkRFRElDQVRFRF9VU0VSIn0seyJ0ZWFtSWQiOiIyIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjoiMiIsImF1dGhvcml0eSI6IlRFQU1fRklOQU5DRSJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJBQ0NPVU5USU5HIn1dLCJ0b2tlbiI6IjE1YjY5MWQxLThmOWUtNGQ4Zi04NzNkLTk4ZWI0NGU0ODk5NSIsImV4cCI6MTc1NzQyODg3MH0.HM3vLZbR4H8LIu0Quqm3dqwCj6V_XAYtaUGg5ZQkeefgvMA1LIoxJRyPgZYhJgJJ_aHPnBZ08wJwCrFADGHitA"}}}`)
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
 		}
 
 	})
@@ -143,6 +235,37 @@ func TestStarterClusterServiceOp_Resume(t *testing.T) {
 
 	//then
 	assert.Equal(t, clusterIdResponse.ClusterId, 427)
+}
+
+func TestStarterClusterServiceOp_Fail_On_Resume(t *testing.T) {
+	//given
+	serveMux := http.NewServeMux()
+	server := httptest.NewServer(serveMux)
+	defer server.Close()
+
+	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodPost; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		var request GraphQLQuery
+		json.NewDecoder(r.Body).Decode(&request)
+
+		if strings.Contains(request.Query, "resumeCluster") {
+			fmt.Fprint(w, `{"errors":[{"message":"500: Internal server error"}],"data":{"response":null}}`)
+		} else {
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
+		}
+
+	})
+	client, _, _ := NewFromCredentials("apiKey", "apiSecret", OptionEndpoint(server.URL))
+	request := &models.ClusterResumeInput{}
+
+	//when
+	_, _, resumeErr := NewStarterClusterService(client).Resume(context.TODO(), request)
+
+	//then
+	assert.NotNil(t, resumeErr)
+	assert.Contains(t, resumeErr.Error(), "500: Internal server error")
 }
 
 func TestStarterClusterServiceOp_Stop(t *testing.T) {
@@ -161,7 +284,7 @@ func TestStarterClusterServiceOp_Stop(t *testing.T) {
 		if strings.Contains(request.Query, "stopCluster") {
 			fmt.Fprint(w, `{"data":{"response":{"clusterId":427}}}`)
 		} else {
-			fmt.Fprint(w, `{"data":{"response":{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5dW51c0BoYXplbGNhc3QuY29tIiwicm9sZXMiOlt7InRlYW1JZCI6IjMiLCJhdXRob3JpdHkiOiJURUFNX0FETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9GSU5BTkNFIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkFETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJVU0VSIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkRFRElDQVRFRF9VU0VSIn0seyJ0ZWFtSWQiOiIyIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjoiMiIsImF1dGhvcml0eSI6IlRFQU1fRklOQU5DRSJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJBQ0NPVU5USU5HIn1dLCJ0b2tlbiI6IjE1YjY5MWQxLThmOWUtNGQ4Zi04NzNkLTk4ZWI0NGU0ODk5NSIsImV4cCI6MTc1NzQyODg3MH0.HM3vLZbR4H8LIu0Quqm3dqwCj6V_XAYtaUGg5ZQkeefgvMA1LIoxJRyPgZYhJgJJ_aHPnBZ08wJwCrFADGHitA"}}}`)
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
 		}
 
 	})
@@ -173,6 +296,37 @@ func TestStarterClusterServiceOp_Stop(t *testing.T) {
 
 	//then
 	assert.Equal(t, clusterIdResponse.ClusterId, 427)
+}
+
+func TestStarterClusterServiceOp_Fail_On_Stop(t *testing.T) {
+	//given
+	serveMux := http.NewServeMux()
+	server := httptest.NewServer(serveMux)
+	defer server.Close()
+
+	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodPost; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		var request GraphQLQuery
+		json.NewDecoder(r.Body).Decode(&request)
+
+		if strings.Contains(request.Query, "stopCluster") {
+			fmt.Fprint(w, `{"errors":[{"message":"500: Internal server error"}],"data":{"response":null}}`)
+		} else {
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
+		}
+
+	})
+	client, _, _ := NewFromCredentials("apiKey", "apiSecret", OptionEndpoint(server.URL))
+	request := &models.ClusterStopInput{}
+
+	//when
+	_, _, stopErr := NewStarterClusterService(client).Stop(context.TODO(), request)
+
+	//then
+	assert.NotNil(t, stopErr)
+	assert.Contains(t, stopErr.Error(), "500: Internal server error")
 }
 
 func TestStarterClusterServiceOp_Delete(t *testing.T) {
@@ -191,7 +345,7 @@ func TestStarterClusterServiceOp_Delete(t *testing.T) {
 		if strings.Contains(request.Query, "deleteCluster") {
 			fmt.Fprint(w, `{"data":{"response":{"clusterId":427}}}`)
 		} else {
-			fmt.Fprint(w, `{"data":{"response":{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5dW51c0BoYXplbGNhc3QuY29tIiwicm9sZXMiOlt7InRlYW1JZCI6IjMiLCJhdXRob3JpdHkiOiJURUFNX0FETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9GSU5BTkNFIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkFETUlOIn0seyJ0ZWFtSWQiOiIxIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJVU0VSIn0seyJ0ZWFtSWQiOm51bGwsImF1dGhvcml0eSI6IkRFRElDQVRFRF9VU0VSIn0seyJ0ZWFtSWQiOiIyIiwiYXV0aG9yaXR5IjoiVEVBTV9BRE1JTiJ9LHsidGVhbUlkIjoiMiIsImF1dGhvcml0eSI6IlRFQU1fRklOQU5DRSJ9LHsidGVhbUlkIjpudWxsLCJhdXRob3JpdHkiOiJBQ0NPVU5USU5HIn1dLCJ0b2tlbiI6IjE1YjY5MWQxLThmOWUtNGQ4Zi04NzNkLTk4ZWI0NGU0ODk5NSIsImV4cCI6MTc1NzQyODg3MH0.HM3vLZbR4H8LIu0Quqm3dqwCj6V_XAYtaUGg5ZQkeefgvMA1LIoxJRyPgZYhJgJJ_aHPnBZ08wJwCrFADGHitA"}}}`)
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
 		}
 
 	})
@@ -203,6 +357,37 @@ func TestStarterClusterServiceOp_Delete(t *testing.T) {
 
 	//then
 	assert.Equal(t, clusterIdResponse.ClusterId, 427)
+}
+
+func TestStarterClusterServiceOp_Fail_On_Delete(t *testing.T) {
+	//given
+	serveMux := http.NewServeMux()
+	server := httptest.NewServer(serveMux)
+	defer server.Close()
+
+	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodPost; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		var request GraphQLQuery
+		json.NewDecoder(r.Body).Decode(&request)
+
+		if strings.Contains(request.Query, "deleteCluster") {
+			fmt.Fprint(w, `{"errors":[{"message":"500: Internal server error"}],"data":{"response":null}}`)
+		} else {
+			fmt.Fprint(w, `{"data":{"response":{"token":"token"}}}`)
+		}
+
+	})
+	client, _, _ := NewFromCredentials("apiKey", "apiSecret", OptionEndpoint(server.URL))
+	request := &models.ClusterDeleteInput{}
+
+	//when
+	_, _, deleteErr := NewStarterClusterService(client).Delete(context.TODO(), request)
+
+	//then
+	assert.NotNil(t, deleteErr)
+	assert.Contains(t, deleteErr.Error(), "500: Internal server error")
 }
 
 func ExampleStarterClusterService_create() {
