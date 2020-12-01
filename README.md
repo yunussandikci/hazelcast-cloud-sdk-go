@@ -1,4 +1,3 @@
-## :construction: This SDK is still in active development and will be published soon!
 # Hazelcast Cloud SDK - Go
 
 [![GoDoc](https://pkg.go.dev/badge/github.com/hazelcast/hazelcast-cloud-sdk-go)](https://pkg.go.dev/github.com/hazelcast/hazelcast-cloud-sdk-go)
