@@ -2,7 +2,7 @@ package hazelcastcloud
 
 import (
 	"context"
-	"github.com/hazelcast/hazelcast-cloud-sdk-go/models"
+	"github.com/yunussandikci/hazelcast-cloud-sdk-go/models"
 )
 
 //This AvailabilityZoneService is used to make operations related with availability zones
