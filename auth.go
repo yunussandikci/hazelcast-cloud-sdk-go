@@ -2,7 +2,7 @@ package hazelcastcloud
 
 import (
 	"context"
-	"github.com/yunussandikci/hazelcast-cloud-sdk-go/models"
+	"github.com/hazelcast/hazelcast-cloud-sdk-go/models"
 )
 
 //This AuthService is used to make authorization operations

@@ -3,7 +3,7 @@ package graphql
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/yunussandikci/hazelcast-cloud-sdk-go/models"
+	"github.com/hazelcast/hazelcast-cloud-sdk-go/models"
 	"reflect"
 	"strings"
 	"unicode"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/yunussandikci/hazelcast-cloud-sdk-go/models"
+	"github.com/hazelcast/hazelcast-cloud-sdk-go/models"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
