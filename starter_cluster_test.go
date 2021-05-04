@@ -397,7 +397,7 @@ func ExampleStarterClusterService_create() {
 		CloudProvider:        "aws",
 		Region:               "us-west-2",
 		ClusterType:          models.Free,
-		HazelcastVersion:     models.Version312,
+		HazelcastVersion:     models.Version3,
 		TotalMemory:          0.2,
 		IsAutoScalingEnabled: false,
 		IsHotBackupEnabled:   false,

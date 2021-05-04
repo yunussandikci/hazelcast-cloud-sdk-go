@@ -26,8 +26,8 @@ const (
 type StarterHazelcastVersion string
 
 const (
-	Version312 StarterHazelcastVersion = "VERSION_3_12"
-	Version40  StarterHazelcastVersion = "VERSION_4_0"
+	Version3 StarterHazelcastVersion = "VERSION_3"
+	Version4 StarterHazelcastVersion = "VERSION_4"
 )
 
 //Eviction policy to be applied when the size of map grows larger than the value specified by the Max Size element described below. For more information, see [Eviction Policy](https://docs.cloud.hazelcast.com/docs/map-configurations#eviction-policy)
