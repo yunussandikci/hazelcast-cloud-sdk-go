@@ -1,7 +1,7 @@
 package graphql
 
 import (
-	"github.com/hazelcast/hazelcast-cloud-sdk-go/models"
+	"github.com/yunussandikci/hazelcast-cloud-sdk-go/models"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
