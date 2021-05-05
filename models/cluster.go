@@ -22,14 +22,6 @@ const (
 	Enterprise ProductTypeName = "ENTERPRISE"
 )
 
-//Hazelcast version for starter versions of Hazelcast Cloud clusters
-type StarterHazelcastVersion string
-
-const (
-	Version3 StarterHazelcastVersion = "VERSION_3"
-	Version4 StarterHazelcastVersion = "VERSION_4"
-)
-
 //Eviction policy to be applied when the size of map grows larger than the value specified by the Max Size element described below. For more information, see [Eviction Policy](https://docs.cloud.hazelcast.com/docs/map-configurations#eviction-policy)
 type EvictionPolicy string
 
@@ -117,7 +109,7 @@ type CreateStarterClusterInput struct {
 	//Cluster type of the cluster
 	ClusterType StarterClusterType `json:"clusterType"`
 	//Hazelcast IMDG version of the cluster.
-	HazelcastVersion StarterHazelcastVersion `json:"hazelcastVersion"`
+	HazelcastVersion string `json:"hazelcastVersion"`
 	//Total memory of the cluster.
 	TotalMemory float64 `json:"totalMemory"`
 	//Shows if auto scaling feature enabled or not.

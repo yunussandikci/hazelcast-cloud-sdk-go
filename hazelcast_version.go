@@ -2,12 +2,12 @@ package hazelcastcloud
 
 import (
 	"context"
-	"github.com/hazelcast/hazelcast-cloud-sdk-go/models"
+	"github.com/yunussandikci/hazelcast-cloud-sdk-go/models"
 )
 
-//This HazelcastVersionService is used to make operations related with enterprise clusters
+//This HazelcastVersionService is used to get usaeable versions to create starter and enterprise clusters.
 type HazelcastVersionService interface {
-	List(ctx context.Context) (*[]models.EnterpriseHazelcastVersion, *Response, error)
+	List(ctx context.Context) (*[]models.HazelcastVersion, *Response, error)
 }
 
 type hazelcastVersionServiceOp struct {
@@ -19,8 +19,8 @@ func NewHazelcastVersionService(client *Client) HazelcastVersionService {
 }
 
 //This function returns a list of available Hazelcast versions
-func (c hazelcastVersionServiceOp) List(ctx context.Context) (*[]models.EnterpriseHazelcastVersion, *Response, error) {
-	var hazelcastVersionList []models.EnterpriseHazelcastVersion
+func (c hazelcastVersionServiceOp) List(ctx context.Context) (*[]models.HazelcastVersion, *Response, error) {
+	var hazelcastVersionList []models.HazelcastVersion
 	graphqlRequest := models.GraphqlRequest{
 		Name:      "hazelcastVersions",
 		Operation: models.Query,
